@@ -17,6 +17,18 @@ class dm:
 
 dm = dm()
 
+h = """
+write - Writes an entry to data
+read -  Reads from an entry
+list - Lists all entries
+del - Deletes an entry
+backup - Backups current data
+load - Loads current backup
+erase - Erases current data
+search - Searches for an key with the specified value
+info - Shows key info
+"""
+
 def s():
   print(" ")
 
@@ -72,13 +84,16 @@ while True:
     print("Created backup! use the 'load' command to load the backup!")
     s()
   elif ask == "load":
-    with open('backupdata.sparkdm', 'r') as filedb:
-      for line in filedb:
-        key, value = line.strip().split(": ")
-        if key not in dm.data:
+    try:
+      with open('backupdata.sparkdm', 'r') as filedb:
+        for line in filedb:
+          key, value = line.strip().split(": ")
+          if key not in dm.data:
             dm.w(key, value)
-    os.remove('backupdata.sparkdm')
-    print("Succesfully loaded backup! The backup was deleted, make sure to make a new one")
+      os.remove('backupdata.sparkdm')
+      print("Succesfully loaded backup! The backup was deleted, make sure to make a new one")
+    except:
+      print("No backup found!")
     s()
   elif ask == "erase":
     backup = Path("backupdata.sparkdm")
@@ -94,5 +109,35 @@ while True:
       else:
         print("Aborted!")
     s()
+  elif ask == "help":
+    print("List of commands:")
+    print(h)
+  elif ask == "search":
+    value_to_search = input("Enter the value to search for: ")
+    found_keys = [key for key, value in dm.data.items() if value == value_to_search]
+    if found_keys:
+      print(f"Keys with the specified value: {', '.join(found_keys)}")
+    else:
+      print("No keys found with the specified value.")
+    s()
+  elif ask == "dupe":
+    key = input("Key name > ")
+    val = dm.r(key)
+    dm.w(key + "_c", val)
+    s()
+  elif ask == "info":
+    key = input("Key name > ")
+    if key in dm.data:
+      if len(key) >= 2 and key[-2:] == '_c':
+        print(f"Key {key} is a copy.")
+        val = dm.r(key)
+        print(f"Value of the key is {val}")
+      else:
+        print("Key isn't a copy.")
+        val = dm.r(key)
+        print(f"Value of the key is {val}")
+    else:
+      print("Key not found!")
+    s()
   else:
-    print("Unknown command!")
+    print("Unknown command! Run 'help' for a list of commands!")
